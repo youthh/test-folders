@@ -1,0 +1,16 @@
+.toggle {
+    cursor: pointer;
+}
+
+body {
+    background: #666;
+    color: #e7e7e7;
+}
+
+input {
+    margin-bottom: 20px;
+}
+
+.item {
+    margin: 8px 0;
+}
