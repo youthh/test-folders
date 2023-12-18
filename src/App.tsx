@@ -1,4 +1,3 @@
-// App.tsx
 import React, { useState } from "react";
 import { Folder } from "./utils/types";
 import TreeView from "./components/TreeView";
