@@ -1,46 +1,51 @@
-# Getting Started with Create React App
+# Запрошення на побачення 💌
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Маленький вайбовий сайт-запрошення: питання «Підеш зі мною на каву?», кнопка
+«так» — і кнопка «ні», яку неможливо натиснути. Після «так» відкривається
+форма: коли вільна, о котрій та яке побачення хочеться. У фіналі — «квиток на
+побачення», який можна надіслати одним тапом.
 
-## Available Scripts
+## Як це працює
 
-In the project directory, you can run:
+**Кнопка «ні» (`src/date/RunawayNo.tsx`)**
 
-### `npm start`
+- **Комп'ютер** — слухається рух миші по всьому вікну: щойно курсор підповзає
+  ближче ніж на 110 px, кнопка телепортується в інше місце екрана.
+- **Телефон** — там ховера немає, тому працюють три запобіжники:
+  1. кнопка стрибає ще на `pointerdown`/`touchstart`, тобто до того, як палець
+     відпустили;
+  2. навіть якщо тап якось зареєструвався, `onClick` не приймає відповідь —
+     він просто змушує кнопку тікати далі;
+  3. з кожною спробою кнопка меншає (до 45 % розміру), а «так» — росте.
+- Після 9 ухилянь кнопка «ні» зникає назавжди, лишається тільки «так».
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+**Форма (`src/date/PlanForm.tsx`)** — день (не раніше сьогодні), час (швидкі
+варіанти або свій), одна чи кілька ідей для побачення, поле для побажань.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+**Фінал (`src/date/Done.tsx`)** — картка-квиток із підсумком і кнопка
+«надіслати»: використовує Web Share API, а якщо його немає — копіює текст у
+буфер обміну.
 
-### `npm test`
+## Що можна змінити під себе
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Все найважливіше зібрано в `src/date/config.ts`:
 
-### `npm run build`
+- `herName` / `myName` — імена (можна лишити порожніми);
+- `question` і `subtitle` — текст головного питання;
+- `noLabels` — фрази на кнопці «ні», поки вона тікає (їх кількість задає, скільки
+  разів вона встигне втекти);
+- `dateIdeas` — варіанти побачення;
+- `timeSlots` — швидкі варіанти часу.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Стилі — у `src/date/date.css` (кольори винесені у CSS-змінні на початку файлу).
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Команди
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm install     # встановити залежності
+npm start       # локальний запуск на http://localhost:3000
+npm run build   # прод-збірка у папку build/
+```
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Готову збірку з `build/` можна залити на будь-який статичний хостинг
+(Vercel, Netlify, GitHub Pages) — бекенд не потрібен.
