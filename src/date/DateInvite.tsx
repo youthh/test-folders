@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Confetti from "./Confetti";
 import Done from "./Done";
 import Hearts from "./Hearts";
@@ -17,7 +17,7 @@ const teases = [
   "вона тебе боїться",
   "може все ж «так»? ☕",
   "ти вперта, мені подобається",
-  "«так» ось тут, зовсім поруч →",
+  "«так» ось тут, зовсім поруч 💗",
   "остання спроба, і вона втече",
 ];
 
@@ -25,6 +25,8 @@ const DateInvite: React.FC = () => {
   const [step, setStep] = useState<Step>("ask");
   const [dodges, setDodges] = useState(0);
   const [plan, setPlan] = useState<DatePlan | null>(null);
+  // майданчик, за межі якого кнопка «ні» не може втекти
+  const arenaRef = useRef<HTMLDivElement>(null);
 
   const yesScale = Math.min(1 + dodges * 0.06, 1.45);
   const tease = teases[Math.min(dodges, teases.length - 1)];
@@ -44,7 +46,10 @@ const DateInvite: React.FC = () => {
             </h1>
             <p className="subtitle">{config.subtitle}</p>
 
-            <div className="buttons">
+            <div
+              className={`buttons${dodges > maxDodges ? " collapsed" : ""}`}
+              ref={arenaRef}
+            >
               <button
                 type="button"
                 className="btn btn-yes"
@@ -56,12 +61,14 @@ const DateInvite: React.FC = () => {
               <RunawayNo
                 dodges={dodges}
                 onDodge={() => setDodges((d) => d + 1)}
+                arenaRef={arenaRef}
               />
             </div>
 
-            {tease && <p className="tease">{tease}</p>}
-            {dodges > maxDodges && (
+            {dodges > maxDodges ? (
               <p className="tease">лишилась одна кнопка. доля 😌</p>
+            ) : (
+              tease && <p className="tease">{tease}</p>
             )}
           </div>
         )}

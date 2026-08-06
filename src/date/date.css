@@ -186,13 +186,24 @@
 }
 
 /* ── кнопки ──────────────────────────────────────── */
+/* Майданчик для кнопок: кнопка «ні» тікає лише в його межах,
+   тому завжди лишається на видноті. */
 .buttons {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
   justify-content: center;
-  min-height: 64px;
+  min-height: 200px;
+  transition: min-height 0.35s ease;
+}
+
+/* кнопка «ні» вже втекла — майданчик більше не потрібен */
+.buttons.collapsed {
+  min-height: 0;
+  gap: 18px;
+  flex-direction: column;
 }
 
 .btn {

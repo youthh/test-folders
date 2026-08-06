@@ -6,21 +6,31 @@ type Point = { x: number; y: number };
 interface Props {
   dodges: number;
   onDodge: () => void;
+  /** Майданчик, у межах якого кнопці дозволено тікати. */
+  arenaRef: React.RefObject<HTMLElement>;
 }
 
 // Відстань (px), на якій кнопка вже починає тікати від курсора
-const FLEE_RADIUS = 110;
+const FLEE_RADIUS = 90;
 // Мінімальний відступ від країв екрана
-const EDGE = 12;
+const EDGE = 8;
+// Запас на нахил кнопки при розрахунку її габариту
+const SAFETY = 10;
 
 const randomBetween = (min: number, max: number) =>
   min + Math.random() * (max - min);
 
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(Math.max(value, min), max);
+
 /**
  * Кнопка «ні», яку неможливо натиснути.
  *
+ * Тікає вона лише в межах майданчика (arenaRef) — тобто завжди лишається
+ * там, куди людина дивиться, і не може загубитись десь за краєм екрана.
+ *
  * Десктоп: слухаємо рух миші по вікну — щойно курсор підповзає ближче за
- * FLEE_RADIUS, кнопка телепортується в інше місце.
+ * FLEE_RADIUS, кнопка перестрибує в найдальшу від нього точку майданчика.
  *
  * Телефон: там немає ховера, тому працюють два запобіжники —
  *   1) на pointerdown/touchstart кнопка стрибає ще до того, як палець відпустили;
@@ -28,59 +38,101 @@ const randomBetween = (min: number, max: number) =>
  *      а просто змушує кнопку тікати далі.
  * Плюс з кожною спробою вона меншає, тож влучити стає дедалі важче.
  */
-const RunawayNo: React.FC<Props> = ({ dodges, onDodge }) => {
+const RunawayNo: React.FC<Props> = ({ dodges, onDodge, arenaRef }) => {
   const ref = useRef<HTMLButtonElement>(null);
   const [pos, setPos] = useState<Point | null>(null);
   const posRef = useRef<Point | null>(null);
   const lastDodgeAt = useRef(0);
 
+  /**
+   * Межі, у яких може опинитись лівий верхній кут кнопки.
+   * Це перетин майданчика з видимою частиною вікна — тож кнопка не вилізе
+   * ні за картку, ні за екран (навіть коли сайт відкрито у вбудованій рамці).
+   */
+  const bounds = useCallback(() => {
+    const arena = arenaRef.current;
+    const el = ref.current;
+    if (!arena || !el) return null;
+
+    const a = arena.getBoundingClientRect();
+    // розмір без трансформацій + запас: інакше нахил кнопки на наступному
+    // кроці розширює її габарит і вона визирає за межі майданчика
+    const b = {
+      width: el.offsetWidth + SAFETY,
+      height: el.offsetHeight + SAFETY,
+    };
+
+    // видима частина майданчика у координатах вікна
+    const left = Math.max(a.left, EDGE);
+    const top = Math.max(a.top, EDGE);
+    const right = Math.min(a.right, window.innerWidth - EDGE);
+    const bottom = Math.min(a.bottom, window.innerHeight - EDGE);
+
+    // переводимо у координати всередині майданчика
+    let minX = left - a.left;
+    let minY = top - a.top;
+    let maxX = right - a.left - b.width;
+    let maxY = bottom - a.top - b.height;
+
+    // якщо майданчик майже не видно — лишаємось хоча б у його межах
+    if (maxX < minX) {
+      minX = 0;
+      maxX = Math.max(0, a.width - b.width);
+    }
+    if (maxY < minY) {
+      minY = 0;
+      maxY = Math.max(0, a.height - b.height);
+    }
+
+    return { minX, minY, maxX, maxY, width: b.width, height: b.height };
+  }, [arenaRef]);
+
   const jump = useCallback(
     (away?: Point) => {
-      const el = ref.current;
-      if (!el) return;
+      const arena = arenaRef.current;
+      const box = bounds();
+      if (!arena || !box) return;
 
       const now = Date.now();
       // не даємо кнопці смикатись по 60 разів на секунду
-      if (now - lastDodgeAt.current < 120) return;
+      if (now - lastDodgeAt.current < 110) return;
       lastDodgeAt.current = now;
 
-      const rect = el.getBoundingClientRect();
-      const maxX = Math.max(EDGE, window.innerWidth - rect.width - EDGE);
-      const maxY = Math.max(EDGE, window.innerHeight - rect.height - EDGE);
+      const a = arena.getBoundingClientRect();
+      const current = posRef.current;
 
-      let next: Point = {
-        x: randomBetween(EDGE, maxX),
-        y: randomBetween(EDGE, maxY),
-      };
+      // Кидаємо кілька варіантів і беремо найдальший від пальця/курсора
+      let best: Point | null = null;
+      let bestScore = -Infinity;
 
-      // Шукаємо точку подалі від курсора/пальця та від поточного місця
-      for (let i = 0; i < 24; i += 1) {
+      for (let i = 0; i < 16; i += 1) {
         const candidate: Point = {
-          x: randomBetween(EDGE, maxX),
-          y: randomBetween(EDGE, maxY),
+          x: randomBetween(box.minX, box.maxX),
+          y: randomBetween(box.minY, box.maxY),
         };
-        const cx = candidate.x + rect.width / 2;
-        const cy = candidate.y + rect.height / 2;
-        const fromPointer = away
-          ? Math.hypot(cx - away.x, cy - away.y)
-          : Number.POSITIVE_INFINITY;
-        const fromCurrent = Math.hypot(
-          cx - (rect.left + rect.width / 2),
-          cy - (rect.top + rect.height / 2),
-        );
+        // центр кандидата в координатах вікна
+        const cx = a.left + candidate.x + box.width / 2;
+        const cy = a.top + candidate.y + box.height / 2;
 
-        if (fromPointer > 180 && fromCurrent > 140) {
-          next = candidate;
-          break;
+        const fromPointer = away ? Math.hypot(cx - away.x, cy - away.y) : 500;
+        const fromCurrent = current
+          ? Math.hypot(candidate.x - current.x, candidate.y - current.y)
+          : 500;
+
+        // головне — подалі від курсора, але й не на тому самому місці
+        const score = fromPointer + Math.min(fromCurrent, 160) * 0.6;
+        if (score > bestScore) {
+          bestScore = score;
+          best = candidate;
         }
-        next = candidate;
       }
 
-      posRef.current = next;
-      setPos(next);
+      if (!best) return;
+      posRef.current = best;
+      setPos(best);
       onDodge();
     },
-    [onDodge],
+    [arenaRef, bounds, onDodge],
   );
 
   // Десктоп: тікаємо від курсора
@@ -100,48 +152,48 @@ const RunawayNo: React.FC<Props> = ({ dodges, onDodge }) => {
     return () => window.removeEventListener("mousemove", onMove);
   }, [jump]);
 
-  // Якщо змінився розмір вікна — повертаємо кнопку в межі екрана
+  // Змінився розмір вікна або сторінку прокрутили — повертаємо кнопку у видимі межі
   useEffect(() => {
-    const onResize = () => {
-      const el = ref.current;
+    const reclamp = () => {
       const current = posRef.current;
-      if (!el || !current) return;
-      const rect = el.getBoundingClientRect();
+      const box = bounds();
+      if (!current || !box) return;
       const next: Point = {
-        x: Math.min(
-          current.x,
-          Math.max(EDGE, window.innerWidth - rect.width - EDGE),
-        ),
-        y: Math.min(
-          current.y,
-          Math.max(EDGE, window.innerHeight - rect.height - EDGE),
-        ),
+        x: clamp(current.x, box.minX, Math.max(box.minX, box.maxX)),
+        y: clamp(current.y, box.minY, Math.max(box.minY, box.maxY)),
       };
-      posRef.current = next;
-      setPos(next);
+      if (next.x !== current.x || next.y !== current.y) {
+        posRef.current = next;
+        setPos(next);
+      }
     };
 
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
+    window.addEventListener("resize", reclamp);
+    window.addEventListener("scroll", reclamp, { passive: true });
+    return () => {
+      window.removeEventListener("resize", reclamp);
+      window.removeEventListener("scroll", reclamp);
+    };
+  }, [bounds]);
 
   if (dodges > maxDodges) {
     // Кнопка втекла назавжди
     return <p className="gone-note">кнопка «ні» втекла з сайту 🏃‍♀️💨</p>;
   }
 
-  const scale = Math.max(0.45, 1 - dodges * 0.07);
+  const scale = Math.max(0.55, 1 - dodges * 0.05);
   const label = noLabels[Math.min(dodges, noLabels.length - 1)];
 
   const style: React.CSSProperties = pos
     ? {
-        position: "fixed",
+        position: "absolute",
         left: pos.x,
         top: pos.y,
+        margin: 0,
         transform: `scale(${scale}) rotate(${
           (dodges % 2 ? -1 : 1) * dodges * 2
         }deg)`,
-        zIndex: 30,
+        zIndex: 3,
       }
     : { transform: `scale(${scale})` };
 
