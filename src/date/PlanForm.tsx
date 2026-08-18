@@ -1,6 +1,15 @@
 import React, { useMemo, useState } from "react";
-import { busyDates, dateIdeas, timeSlots } from "./config";
-import { addDays, shortDay, toISO, today, WEEKDAYS_SHORT } from "./dateUtils";
+import { busyDays, dateDurationMinutes, dateIdeas, timeSlots } from "./config";
+import {
+  addDays,
+  formatRange,
+  overlapsAny,
+  parseISO,
+  shortDay,
+  toISO,
+  today,
+  WEEKDAYS_SHORT,
+} from "./dateUtils";
 import { DatePlan } from "./types";
 
 interface Props {
@@ -10,10 +19,13 @@ interface Props {
 // Скільки днів наперед показати швидкими кнопками
 const QUICK_DAYS = 14;
 
+const BUSY_TITLE = "у цей день я вже зайнятий";
+const timeBusyMessage = (day: string) =>
+  `Ой, у цей час у мене вже є плани на ${day} 😅 обери інший`;
+
 /** Форма: коли вільна, о котрій та яке побачення хочеться. */
 const PlanForm: React.FC<Props> = ({ onSubmit }) => {
   const min = useMemo(() => toISO(today()), []);
-  const busy = useMemo(() => new Set(busyDates), []);
   const quickDays = useMemo(
     () =>
       Array.from({ length: QUICK_DAYS }, (_, i) => {
@@ -33,9 +45,31 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
+  // Проміжки, зайняті саме в обраний день (якщо день ще не обрано — пусто)
+  const dayRanges = day ? busyDays[day]?.ranges ?? [] : [];
+  const dayFullyBusy = day ? busyDays[day]?.allDay === true : false;
+
+  const isTimeBusy = (t: string) =>
+    dayRanges.length > 0 && overlapsAny(t, dateDurationMinutes, dayRanges);
+
   const pickDay = (iso: string) => {
-    if (busy.has(iso)) return; // на всяк випадок, кнопка й так вимкнена
+    if (busyDays[iso]?.allDay) return; // на всяк випадок, кнопка й так вимкнена
     setDay(iso);
+    setError("");
+    // якщо вже обраний час конфліктує з новим днем — скидаємо його
+    const ranges = busyDays[iso]?.ranges ?? [];
+    if (
+      time &&
+      ranges.length > 0 &&
+      overlapsAny(time, dateDurationMinutes, ranges)
+    ) {
+      setTime("");
+    }
+  };
+
+  const pickTime = (slot: string) => {
+    if (isTimeBusy(slot)) return;
+    setTime(slot);
     setError("");
   };
 
@@ -49,9 +83,11 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!day) return setError("Обери день 🗓️");
-    if (busy.has(day))
+    if (busyDays[day]?.allDay)
       return setError("Ой, у цей день я вже зайнятий 😅 обери інший");
     if (!time) return setError("І час теж 🕒");
+    if (isTimeBusy(time))
+      return setError(timeBusyMessage(shortDay(parseISO(day))));
     if (ideas.length === 0)
       return setError("Обери хоч одну ідею для побачення 💫");
     onSubmit({ day, time, ideas, note: note.trim() });
@@ -68,7 +104,7 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
         <span className="field-label">Який день тобі зручний?</span>
         <div className="chips days">
           {quickDays.map((d) => {
-            const isBusy = busy.has(d.iso);
+            const isBusy = busyDays[d.iso]?.allDay === true;
             return (
               <button
                 key={d.iso}
@@ -77,7 +113,7 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
                   isBusy ? " busy" : ""
                 }`}
                 disabled={isBusy}
-                title={isBusy ? "у цей день я вже зайнятий" : undefined}
+                title={isBusy ? BUSY_TITLE : undefined}
                 onClick={() => pickDay(d.iso)}
               >
                 <span className="day-weekday">{d.weekday}</span>
@@ -87,7 +123,7 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
           })}
         </div>
         <span className="hint">
-          закреслені дні — у мене вже є плани; або постав свою дату нижче
+          закреслені дні — я зайнятий увесь день; або постав свою дату нижче
         </span>
         <input
           type="date"
@@ -97,11 +133,19 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
           onChange={(e) => {
             const value = e.target.value;
             setDay(value);
-            setError(
-              busy.has(value)
-                ? "Ой, у цей день я вже зайнятий 😅 обери інший"
-                : "",
-            );
+            if (busyDays[value]?.allDay) {
+              setError("Ой, у цей день я вже зайнятий 😅 обери інший");
+            } else {
+              setError("");
+              const ranges = busyDays[value]?.ranges ?? [];
+              if (
+                time &&
+                ranges.length > 0 &&
+                overlapsAny(time, dateDurationMinutes, ranges)
+              ) {
+                setTime("");
+              }
+            }
           }}
         />
       </div>
@@ -109,31 +153,45 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
       <div className="field">
         <span className="field-label">О котрій?</span>
         <div className="chips">
-          {timeSlots.map((slot) => (
-            <button
-              key={slot}
-              type="button"
-              className={`chip${time === slot ? " active" : ""}`}
-              onClick={() => {
-                setTime(slot);
-                setError("");
-              }}
-            >
-              {slot}
-            </button>
-          ))}
+          {timeSlots.map((slot) => {
+            const busy = isTimeBusy(slot);
+            return (
+              <button
+                key={slot}
+                type="button"
+                className={`chip${time === slot ? " active" : ""}${
+                  busy ? " busy" : ""
+                }`}
+                disabled={busy}
+                title={busy ? "у цей час я вже зайнятий" : undefined}
+                onClick={() => pickTime(slot)}
+              >
+                {slot}
+              </button>
+            );
+          })}
         </div>
         <input
           type="time"
           className="input"
           value={time}
           onChange={(e) => {
-            setTime(e.target.value);
-            setError("");
+            const value = e.target.value;
+            setTime(value);
+            setError(
+              value && isTimeBusy(value)
+                ? "Ой, у цей час у мене вже є плани 😅 обери інший"
+                : "",
+            );
           }}
-          aria-label="Свій варіант часу"
         />
-        <span className="hint">або постав свій час</span>
+        <span className="hint">
+          {dayFullyBusy || dayRanges.length === 0
+            ? "або постав свій час"
+            : `закреслені години — ${dayRanges
+                .map(formatRange)
+                .join(", ")} у мене вже зайнято; або постав свій час`}
+        </span>
       </div>
 
       <div className="field">

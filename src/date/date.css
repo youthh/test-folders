@@ -387,7 +387,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-.chip.day.busy {
+/* закреслений чіп: цілий зайнятий день або конкретна зайнята година */
+.chip.busy {
   cursor: not-allowed;
   color: #9c8896;
   background: rgba(122, 92, 108, 0.08);
@@ -400,7 +401,12 @@
   text-decoration-color: rgba(122, 92, 108, 0.5);
 }
 
-.chip.day.busy:active {
+.chip.busy:not(.day) {
+  text-decoration: line-through;
+  text-decoration-color: rgba(122, 92, 108, 0.5);
+}
+
+.chip.busy:active {
   transform: none;
 }
 
