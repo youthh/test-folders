@@ -39,6 +39,7 @@ const DateInvite: React.FC = () => {
       <main className="stage">
         {step === "ask" && (
           <div className="card ask">
+            {config.intro && <p className="intro">{config.intro}</p>}
             <div className="emoji-big">☕💗</div>
             <h1 className="title">
               {config.herName ? `${config.herName}, ` : ""}

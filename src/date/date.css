@@ -126,6 +126,15 @@
   }
 }
 
+.intro {
+  max-width: 40ch;
+  margin: 0 auto 18px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink);
+  opacity: 0.82;
+}
+
 .emoji-big {
   font-size: 56px;
   line-height: 1;
