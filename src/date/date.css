@@ -348,6 +348,53 @@
   margin-right: 6px;
 }
 
+/* ── чіпи вибору дня ─────────────────────────────── */
+.chips.days {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.chip.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 52px;
+  padding: 8px 10px;
+  flex: 0 0 auto;
+}
+
+.day-weekday {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+
+.day-date {
+  font-variant-numeric: tabular-nums;
+}
+
+.chip.day.busy {
+  cursor: not-allowed;
+  color: #9c8896;
+  background: rgba(122, 92, 108, 0.08);
+  border-color: rgba(122, 92, 108, 0.14);
+  box-shadow: none;
+}
+
+.chip.day.busy .day-date {
+  text-decoration: line-through;
+  text-decoration-color: rgba(122, 92, 108, 0.5);
+}
+
+.chip.day.busy:active {
+  transform: none;
+}
+
 .error {
   margin: -6px 0 14px;
   font-size: 14px;

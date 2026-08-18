@@ -1,43 +1,12 @@
 import React, { useState } from "react";
 import { config, dateIdeas } from "./config";
+import { prettyDay } from "./dateUtils";
 import { DatePlan } from "./types";
 
 interface Props {
   plan: DatePlan;
   onEdit: () => void;
 }
-
-const WEEKDAYS = [
-  "неділю",
-  "понеділок",
-  "вівторок",
-  "середу",
-  "четвер",
-  "п'ятницю",
-  "суботу",
-];
-
-const MONTHS = [
-  "січня",
-  "лютого",
-  "березня",
-  "квітня",
-  "травня",
-  "червня",
-  "липня",
-  "серпня",
-  "вересня",
-  "жовтня",
-  "листопада",
-  "грудня",
-];
-
-export const prettyDay = (iso: string) => {
-  const [y, m, d] = iso.split("-").map(Number);
-  if (!y || !m || !d) return iso;
-  const date = new Date(y, m - 1, d);
-  return `у ${WEEKDAYS[date.getDay()]}, ${d} ${MONTHS[m - 1]}`;
-};
 
 const ideaLabels = (ids: string[]) =>
   ids
