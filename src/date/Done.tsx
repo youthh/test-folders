@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { config, dateIdeas } from "./config";
+import Countdown from "./Countdown";
+import { config, dateIdeas, placeIdeas } from "./config";
 import { prettyDay } from "./dateUtils";
+import { downloadICS } from "./ics";
 import { DatePlan } from "./types";
 
 interface Props {
@@ -16,10 +18,14 @@ const ideaLabels = (ids: string[]) =>
     })
     .filter(Boolean) as string[];
 
+/** Місця під обрані ідеї побачення, зібрані з config.placeIdeas. */
+const places = (ids: string[]) => ids.flatMap((id) => placeIdeas[id] ?? []);
+
 /** Фінальна картка з підсумком побачення. */
 const Done: React.FC<Props> = ({ plan, onEdit }) => {
   const [copied, setCopied] = useState(false);
   const labels = ideaLabels(plan.ideas);
+  const suggestedPlaces = places(plan.ideas);
 
   const text = [
     "Побачення підтверджено 💌",
@@ -56,6 +62,8 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
         {config.herName ? `${config.herName}, це побачення!` : "Це побачення!"}
       </h2>
 
+      <Countdown day={plan.day} time={plan.time} />
+
       <div className="summary">
         <div className="summary-row">
           <span className="summary-key">Коли</span>
@@ -77,6 +85,21 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
         )}
       </div>
 
+      {suggestedPlaces.length > 0 && (
+        <div className="places">
+          <span className="field-label">Куди підемо</span>
+          <ul className="places-list">
+            {suggestedPlaces.map((place) => (
+              <li key={place.name}>
+                <a href={place.mapUrl} target="_blank" rel="noreferrer">
+                  📍 {place.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <p className="subtitle">
         Надішли це мені — і вважай, що ми домовились 🤍
       </p>
@@ -84,6 +107,13 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
       <div className="done-actions">
         <button type="button" className="btn btn-yes" onClick={share}>
           {copied ? "Скопійовано ✅" : "Надіслати / скопіювати"}
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost"
+          onClick={() => downloadICS(plan)}
+        >
+          Додати в календар 📅
         </button>
         <button type="button" className="btn btn-ghost" onClick={onEdit}>
           Змінити

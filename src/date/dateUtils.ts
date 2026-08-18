@@ -66,6 +66,26 @@ export const today = () => {
   return now;
 };
 
+/** "YYYY-MM-DD" + "HH:MM" → Date у локальному часовому поясі. */
+export const toDateTime = (iso: string, hhmm: string) => {
+  const date = parseISO(iso);
+  const [h, m] = hhmm.split(":").map(Number);
+  date.setHours(h || 0, m || 0, 0, 0);
+  return date;
+};
+
+/** "3 дні" / "2 години" / "5 хвилин" — українська множина за числом. */
+export const pluralize = (
+  n: number,
+  [one, few, many]: [string, string, string],
+) => {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
+};
+
 export const timeToMinutes = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;

@@ -2,7 +2,9 @@ import React, { useRef, useState } from "react";
 import Confetti from "./Confetti";
 import Done from "./Done";
 import Hearts from "./Hearts";
+import MusicToggle from "./MusicToggle";
 import PlanForm from "./PlanForm";
+import Reasons from "./Reasons";
 import RunawayNo from "./RunawayNo";
 import { config, maxDodges } from "./config";
 import { DatePlan } from "./types";
@@ -35,6 +37,7 @@ const DateInvite: React.FC = () => {
     <div className="date-app">
       <Hearts />
       <Confetti fire={step !== "ask"} />
+      <MusicToggle />
 
       <main className="stage">
         {step === "ask" && (
@@ -46,6 +49,7 @@ const DateInvite: React.FC = () => {
               {config.question}
             </h1>
             <p className="subtitle">{config.subtitle}</p>
+            <Reasons />
 
             <div
               className={`buttons${dodges > maxDodges ? " collapsed" : ""}`}
