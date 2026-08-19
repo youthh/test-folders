@@ -6,7 +6,9 @@ import MusicToggle from "./MusicToggle";
 import PlanForm from "./PlanForm";
 import Reasons from "./Reasons";
 import RunawayNo from "./RunawayNo";
+import ScratchCard from "./ScratchCard";
 import { config, maxDodges } from "./config";
+import { daysBetween, parseISO, pluralize, today } from "./dateUtils";
 import { DatePlan } from "./types";
 import "./date.css";
 
@@ -27,11 +29,27 @@ const DateInvite: React.FC = () => {
   const [step, setStep] = useState<Step>("ask");
   const [dodges, setDodges] = useState(0);
   const [plan, setPlan] = useState<DatePlan | null>(null);
+  // поки false — питання сховане під шаром "фольги" скретч-картки
+  const [revealed, setRevealed] = useState(false);
   // майданчик, за межі якого кнопка «ні» не може втекти
   const arenaRef = useRef<HTMLDivElement>(null);
 
   const yesScale = Math.min(1 + dodges * 0.06, 1.45);
   const tease = teases[Math.min(dodges, teases.length - 1)];
+
+  const daysKnown = config.metDate
+    ? daysBetween(parseISO(config.metDate), today())
+    : null;
+  const knownSinceText =
+    daysKnown !== null && daysKnown >= 0
+      ? daysKnown === 0
+        ? "ми знайомі відсьогодні 🙂"
+        : `ми знайомі вже ${daysKnown} ${pluralize(daysKnown, [
+            "день",
+            "дні",
+            "днів",
+          ])} 🙂`
+      : null;
 
   return (
     <div className="date-app">
@@ -41,41 +59,47 @@ const DateInvite: React.FC = () => {
 
       <main className="stage">
         {step === "ask" && (
-          <div className="card ask">
-            {config.intro && <p className="intro">{config.intro}</p>}
-            <div className="emoji-big">☕💗</div>
-            <h1 className="title">
-              {config.herName ? `${config.herName}, ` : ""}
-              {config.question}
-            </h1>
-            <p className="subtitle">{config.subtitle}</p>
-            <Reasons />
+          <ScratchCard active={!revealed} onReveal={() => setRevealed(true)}>
+            <div className="card ask">
+              {config.intro && <p className="intro">{config.intro}</p>}
+              {knownSinceText && (
+                <p className="known-since">{knownSinceText}</p>
+              )}
+              <div className="emoji-big">☕💗</div>
+              <h1 className="title">
+                {config.herName ? `${config.herName}, ` : ""}
+                {config.question}
+              </h1>
+              <p className="subtitle">{config.subtitle}</p>
+              <Reasons />
 
-            <div
-              className={`buttons${dodges > maxDodges ? " collapsed" : ""}`}
-              ref={arenaRef}
-            >
-              <button
-                type="button"
-                className="btn btn-yes"
-                style={{ transform: `scale(${yesScale})` }}
-                onClick={() => setStep("form")}
+              <div
+                className={`buttons${dodges > maxDodges ? " collapsed" : ""}`}
+                ref={arenaRef}
               >
-                Так 💖
-              </button>
-              <RunawayNo
-                dodges={dodges}
-                onDodge={() => setDodges((d) => d + 1)}
-                arenaRef={arenaRef}
-              />
-            </div>
+                <button
+                  type="button"
+                  className="btn btn-yes"
+                  style={{ transform: `scale(${yesScale})` }}
+                  onClick={() => setStep("form")}
+                >
+                  Так 💖
+                </button>
+                <RunawayNo
+                  dodges={dodges}
+                  onDodge={() => setDodges((d) => d + 1)}
+                  arenaRef={arenaRef}
+                  paused={!revealed}
+                />
+              </div>
 
-            {dodges > maxDodges ? (
-              <p className="tease">лишилась одна кнопка. доля 😌</p>
-            ) : (
-              tease && <p className="tease">{tease}</p>
-            )}
-          </div>
+              {dodges > maxDodges ? (
+                <p className="tease">лишилась одна кнопка. доля 😌</p>
+              ) : (
+                tease && <p className="tease">{tease}</p>
+              )}
+            </div>
+          </ScratchCard>
         )}
 
         {step === "form" && (

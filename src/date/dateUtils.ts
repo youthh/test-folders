@@ -66,6 +66,12 @@ export const today = () => {
   return now;
 };
 
+/** Ціле число днів між двома датами (a раніше b). */
+export const daysBetween = (a: Date, b: Date) => {
+  const MS_DAY = 24 * 60 * 60 * 1000;
+  return Math.round((b.getTime() - a.getTime()) / MS_DAY);
+};
+
 /** "YYYY-MM-DD" + "HH:MM" → Date у локальному часовому поясі. */
 export const toDateTime = (iso: string, hhmm: string) => {
   const date = parseISO(iso);

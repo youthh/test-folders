@@ -3,6 +3,7 @@ import Countdown from "./Countdown";
 import { config, dateIdeas, placeIdeas } from "./config";
 import { prettyDay } from "./dateUtils";
 import { buildGoogleCalendarUrl, downloadICS } from "./ics";
+import { renderNodeToBlob, shareOrSaveImage } from "./shareImage";
 import { DatePlan } from "./types";
 
 interface Props {
@@ -25,7 +26,10 @@ const places = (ids: string[]) => ids.flatMap((id) => placeIdeas[id] ?? []);
 const Done: React.FC<Props> = ({ plan, onEdit }) => {
   const [copied, setCopied] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const fallbackRef = useRef<HTMLTextAreaElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const labels = ideaLabels(plan.ideas);
   const suggestedPlaces = places(plan.ideas);
 
@@ -40,12 +44,38 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
     .join("\n");
 
   /**
+   * Малює квиток у картинку й пропонує «Поділитись» — на телефоні це
+   * відкриє звичайний список застосунків (Telegram, Instagram тощо), так
+   * само як зі справжнім скріншотом. no-capture прибирає з картинки кнопки
+   * й службові підказки — лишається тільки сам квиток.
+   */
+  const shareAsImage = async () => {
+    if (!cardRef.current || imageBusy) return;
+    setImageBusy(true);
+    setImageError(false);
+    // на час рендеру вимикаємо градієнтний заголовок (html2canvas його не
+    // підтримує) — див. .capturing .title у date.css
+    cardRef.current.classList.add("capturing");
+    try {
+      const blob = await renderNodeToBlob(cardRef.current, {
+        ignoreElements: (el) => el.classList.contains("no-capture"),
+      });
+      await shareOrSaveImage(blob, "date-invite.png", "Наше побачення 💌");
+    } catch {
+      setImageError(true);
+    } finally {
+      cardRef.current?.classList.remove("capturing");
+      setImageBusy(false);
+    }
+  };
+
+  /**
    * Три рівні запасних варіантів: Web Share API → буфер обміну →
    * виділений текст на екрані. Останній варіант спрацює завжди, бо не
    * залежить від жодного дозволу браузера — деякі пісочниці (як прев'ю
    * цього ж сайту) блокують і share, і clipboard.
    */
-  const share = async () => {
+  const shareAsText = async () => {
     if (navigator.share) {
       try {
         await navigator.share({ title: "Наше побачення 💌", text });
@@ -75,7 +105,7 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
   };
 
   return (
-    <div className="card done">
+    <div className="card done" ref={cardRef}>
       <div className="ticket-top">
         <span className="ticket-label">квиток на побачення</span>
         <span className="ticket-heart">💌</span>
@@ -123,12 +153,12 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
         </div>
       )}
 
-      <p className="subtitle">
+      <p className="subtitle no-capture">
         Надішли це мені — і вважай, що ми домовились 🤍
       </p>
 
       {showFallback && (
-        <div className="fallback-copy">
+        <div className="fallback-copy no-capture">
           <span className="hint">
             не вдалось скопіювати автоматично — текст уже виділений, просто
             натисни Ctrl/Cmd + C
@@ -144,9 +174,17 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
         </div>
       )}
 
-      <div className="done-actions">
-        <button type="button" className="btn btn-yes" onClick={share}>
-          {copied ? "Скопійовано ✅" : "Надіслати / скопіювати"}
+      <div className="done-actions no-capture">
+        <button
+          type="button"
+          className="btn btn-yes"
+          onClick={shareAsImage}
+          disabled={imageBusy}
+        >
+          {imageBusy ? "Готую картинку…" : "Поділитись як картинкою 🖼️"}
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={shareAsText}>
+          {copied ? "Скопійовано ✅" : "Текстом"}
         </button>
         <a
           href={buildGoogleCalendarUrl(plan)}
@@ -161,9 +199,15 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
         </button>
       </div>
 
+      {imageError && (
+        <p className="error no-capture">
+          не вдалось згенерувати картинку — спробуй кнопку «Текстом» 🙏
+        </p>
+      )}
+
       <button
         type="button"
-        className="ics-link"
+        className="ics-link no-capture"
         onClick={() => downloadICS(plan)}
       >
         або завантажити .ics-файл (Apple Calendar тощо)

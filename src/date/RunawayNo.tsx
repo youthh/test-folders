@@ -8,6 +8,13 @@ interface Props {
   onDodge: () => void;
   /** Майданчик, у межах якого кнопці дозволено тікати. */
   arenaRef: React.RefObject<HTMLElement>;
+  /**
+   * Поки true — кнопка не реагує на рух миші по вікну. Потрібно, коли
+   * картка ще прихована (наприклад під фольгою скретч-картки): без цього
+   * мишача "чуйка" ловить рухи миші деінде на екрані й кнопка встигає
+   * втекти назавжди ще до того, як її взагалі побачили.
+   */
+  paused?: boolean;
 }
 
 // Відстань (px), на якій кнопка вже починає тікати від курсора
@@ -38,7 +45,12 @@ const clamp = (value: number, min: number, max: number) =>
  *      а просто змушує кнопку тікати далі.
  * Плюс з кожною спробою вона меншає, тож влучити стає дедалі важче.
  */
-const RunawayNo: React.FC<Props> = ({ dodges, onDodge, arenaRef }) => {
+const RunawayNo: React.FC<Props> = ({
+  dodges,
+  onDodge,
+  arenaRef,
+  paused = false,
+}) => {
   const ref = useRef<HTMLButtonElement>(null);
   const [pos, setPos] = useState<Point | null>(null);
   const posRef = useRef<Point | null>(null);
@@ -137,6 +149,7 @@ const RunawayNo: React.FC<Props> = ({ dodges, onDodge, arenaRef }) => {
 
   // Десктоп: тікаємо від курсора
   useEffect(() => {
+    if (paused) return;
     const onMove = (e: MouseEvent) => {
       const el = ref.current;
       if (!el) return;
@@ -150,7 +163,7 @@ const RunawayNo: React.FC<Props> = ({ dodges, onDodge, arenaRef }) => {
 
     window.addEventListener("mousemove", onMove);
     return () => window.removeEventListener("mousemove", onMove);
-  }, [jump]);
+  }, [jump, paused]);
 
   // Змінився розмір вікна або сторінку прокрутили — повертаємо кнопку у видимі межі
   useEffect(() => {

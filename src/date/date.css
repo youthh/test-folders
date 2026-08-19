@@ -135,6 +135,17 @@
   opacity: 0.82;
 }
 
+.known-since {
+  display: inline-block;
+  margin: 0 0 18px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a5c6c;
+  background: rgba(255, 93, 143, 0.12);
+  border-radius: 999px;
+}
+
 .emoji-big {
   font-size: 56px;
   line-height: 1;
@@ -167,6 +178,17 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* html2canvas не вміє коректно захопити background-clip:text — на час
+   рендеру картинки для "поділитись" підмінюємо градієнт суцільним
+   кольором, інакше замість заголовка виходить суцільна кольорова смуга */
+.capturing .title {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: currentColor;
+  color: var(--pink);
 }
 
 .title.small {
@@ -598,6 +620,52 @@ a.btn {
   }
 }
 
+/* ── скретч-картка ───────────────────────────────── */
+/* .stage — flex-контейнер, тож обгортці потрібна власна ширина: інакше
+   вона (як flex-елемент) стискається до вмісту, і .card { width:100% }
+   всередині втрачає базу для відсотка й обвалюється в нуль */
+.scratch-outer {
+  width: 100%;
+  max-width: 520px;
+}
+
+.scratch-wrap {
+  position: relative;
+}
+
+.scratch-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: var(--radius);
+  cursor: grab;
+  touch-action: none;
+  transition: opacity 0.45s ease;
+}
+
+.scratch-canvas:active {
+  cursor: grabbing;
+}
+
+.scratch-canvas.fading {
+  opacity: 0;
+}
+
+.scratch-skip {
+  display: block;
+  margin: 14px auto 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: #7a5c6c;
+  opacity: 0.7;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ── причини "чому саме кава зі мною" ────────────── */
 .reasons-block {
   margin: -6px 0 18px;
@@ -677,5 +745,8 @@ a.btn {
   .error,
   .reason-card {
     animation: none !important;
+  }
+  .scratch-canvas {
+    transition: none !important;
   }
 }
