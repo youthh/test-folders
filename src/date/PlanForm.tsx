@@ -4,7 +4,7 @@ import {
   dateDurationMinutes,
   dateIdeas,
   timeSlots,
-  workHours,
+  recurringBusy,
 } from "./config";
 import {
   addDays,
@@ -57,7 +57,9 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
 
   // Проміжки, зайняті саме в обраний день: робочі години (якщо це робочий
   // день) + окремі події з config.busyDays. Якщо день ще не обрано — пусто.
-  const dayRanges = day ? effectiveBusyRanges(day, busyDays, workHours) : [];
+  const dayRanges = day
+    ? effectiveBusyRanges(day, busyDays, recurringBusy)
+    : [];
   const dayFullyBusy = day ? busyDays[day]?.allDay === true : false;
 
   const isTimeBusy = (t: string) =>
@@ -77,7 +79,7 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
     if (busyDays[iso]?.allDay) return; // на всяк випадок, кнопка й так вимкнена
     setDay(iso);
     setError("");
-    clearTimeIfNowBusy(effectiveBusyRanges(iso, busyDays, workHours));
+    clearTimeIfNowBusy(effectiveBusyRanges(iso, busyDays, recurringBusy));
   };
 
   const pickTime = (slot: string) => {
@@ -151,7 +153,7 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
             } else {
               setError("");
               clearTimeIfNowBusy(
-                effectiveBusyRanges(value, busyDays, workHours),
+                effectiveBusyRanges(value, busyDays, recurringBusy),
               );
             }
           }}

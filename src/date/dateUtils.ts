@@ -148,12 +148,16 @@ export const mergeRanges = (ranges: TimeRange[]): TimeRange[] => {
   return merged;
 };
 
-/** Регулярний робочий графік із буфером до й після нього. */
-export interface WorkHours {
+/**
+ * Один регулярний щотижневий блок зайнятості — робота, тренування тощо.
+ * Діє щотижня автоматично, без прив'язки до конкретної дати.
+ */
+export interface RecurringBlock {
+  label: string; // тільки для читабельності конфіга, ніде не показується
+  weekdays: number[]; // як у Date.getDay(): 0 — нд, 1 — пн, ... 6 — сб
   start: string; // "HH:MM"
   end: string; // "HH:MM"
-  bufferMinutes: number;
-  weekdays: number[]; // як у Date.getDay(): 0 — нд, 1 — пн, ... 6 — сб
+  bufferMinutes?: number; // запас часу до і після; за замовчуванням 0
 }
 
 export interface BusyDayInfo {
@@ -164,24 +168,26 @@ export interface BusyDayInfo {
 export type BusyDaysMap = Record<string, BusyDayInfo>;
 
 /**
- * Усі зайняті проміжки в конкретний день: робочі години з буфером (якщо
- * цей день узагалі робочий) плюс окремі події з busyDays — об'єднані й
- * посортовані.
+ * Усі зайняті проміжки в конкретний день: регулярні щотижневі блоки, що
+ * діють цього дня тижня (робота, тренування...), плюс окремі події з
+ * busyDays — об'єднані й посортовані.
  */
 export const effectiveBusyRanges = (
   iso: string,
   busyDays: BusyDaysMap,
-  workHours: WorkHours,
+  recurringBusy: RecurringBlock[],
 ): TimeRange[] => {
   const weekday = parseISO(iso).getDay();
   const ranges: TimeRange[] = [];
 
-  if (workHours.weekdays.includes(weekday)) {
+  recurringBusy.forEach((block) => {
+    if (!block.weekdays.includes(weekday)) return;
+    const buffer = block.bufferMinutes ?? 0;
     ranges.push({
-      start: addMinutesToTime(workHours.start, -workHours.bufferMinutes),
-      end: addMinutesToTime(workHours.end, workHours.bufferMinutes),
+      start: addMinutesToTime(block.start, -buffer),
+      end: addMinutesToTime(block.end, buffer),
     });
-  }
+  });
 
   ranges.push(...(busyDays[iso]?.ranges ?? []));
 
