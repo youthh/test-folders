@@ -609,6 +609,52 @@ a.btn {
   }
 }
 
+/* ── скретч-картка ───────────────────────────────── */
+/* .stage — flex-контейнер, тож обгортці потрібна власна ширина: інакше
+   вона (як flex-елемент) стискається до вмісту, і .card { width:100% }
+   всередині втрачає базу для відсотка й обвалюється в нуль */
+.scratch-outer {
+  width: 100%;
+  max-width: 520px;
+}
+
+.scratch-wrap {
+  position: relative;
+}
+
+.scratch-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: var(--radius);
+  cursor: grab;
+  touch-action: none;
+  transition: opacity 0.45s ease;
+}
+
+.scratch-canvas:active {
+  cursor: grabbing;
+}
+
+.scratch-canvas.fading {
+  opacity: 0;
+}
+
+.scratch-skip {
+  display: block;
+  margin: 14px auto 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: #7a5c6c;
+  opacity: 0.7;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 /* ── причини "чому саме кава зі мною" ────────────── */
 .reasons-block {
   margin: -6px 0 18px;
@@ -688,5 +734,8 @@ a.btn {
   .error,
   .reason-card {
     animation: none !important;
+  }
+  .scratch-canvas {
+    transition: none !important;
   }
 }
