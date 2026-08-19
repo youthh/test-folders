@@ -1,0 +1,681 @@
+:root {
+  --pink: #ff5d8f;
+  --pink-soft: #ff8fab;
+  --violet: #a06cd5;
+  --cream: #fff4f7;
+  --ink: #3b2233;
+  --radius: 24px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.date-app {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden; /* по вертикалі сторінка має скролитись — форма буває вища за екран */
+  color: var(--ink);
+  font-family:
+    "Nunito",
+    "Segoe UI",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background: linear-gradient(
+    -45deg,
+    #ffd9e8,
+    #ffc4dd,
+    #e6d5ff,
+    #ffe6cc,
+    #ffd0e0
+  );
+  background-size: 400% 400%;
+  animation: gradient 18s ease infinite;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ── фонові сердечка ─────────────────────────────── */
+.hearts {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.heart {
+  position: absolute;
+  bottom: -60px;
+  opacity: 0;
+  animation-name: float-up;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-110vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+
+/* ── сцена і картка ──────────────────────────────── */
+.stage {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px 40px;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  margin: auto; /* щоб висока картка не обрізалась зверху у flex-контейнері */
+  padding: 32px 26px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 60px rgba(190, 60, 120, 0.22);
+  animation: pop-in 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.intro {
+  max-width: 40ch;
+  margin: 0 auto 18px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink);
+  opacity: 0.82;
+}
+
+.emoji-big {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 12px;
+  animation: beat 1.6s ease-in-out infinite;
+}
+
+@keyframes beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.14);
+  }
+  45% {
+    transform: scale(1);
+  }
+  60% {
+    transform: scale(1.09);
+  }
+}
+
+.title {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 6vw, 38px);
+  font-weight: 800;
+  line-height: 1.2;
+  background: linear-gradient(90deg, var(--pink), var(--violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.title.small {
+  font-size: clamp(22px, 5vw, 30px);
+}
+
+.subtitle {
+  margin: 0 0 22px;
+  font-size: 15px;
+  opacity: 0.72;
+}
+
+.tease {
+  margin: 18px 0 0;
+  min-height: 20px;
+  font-size: 14px;
+  font-style: italic;
+  opacity: 0.7;
+  animation: pop-in 0.3s ease both;
+}
+
+.gone-note {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+/* ── кнопки ──────────────────────────────────────── */
+/* Майданчик для кнопок: кнопка «ні» тікає лише в його межах,
+   тому завжди лишається на видноті. */
+.buttons {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  transition: min-height 0.35s ease;
+}
+
+/* кнопка «ні» вже втекла — майданчик більше не потрібен */
+.buttons.collapsed {
+  min-height: 0;
+  gap: 18px;
+  flex-direction: column;
+}
+
+.btn {
+  padding: 15px 30px;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 0.22s cubic-bezier(0.2, 0.9, 0.3, 1.4),
+    box-shadow 0.22s ease,
+    left 0.18s ease,
+    top 0.18s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* .btn на <a> (наприклад посилання на Google Calendar) */
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-yes {
+  color: #fff;
+  background: linear-gradient(135deg, var(--pink), var(--violet));
+  box-shadow: 0 12px 26px rgba(255, 93, 143, 0.42);
+}
+
+.btn-yes:hover {
+  box-shadow: 0 16px 34px rgba(255, 93, 143, 0.55);
+}
+
+.btn-yes.wide {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.btn-no {
+  color: #7a5c6c;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 8px 18px rgba(120, 60, 90, 0.16);
+  user-select: none;
+}
+
+.btn-ghost {
+  color: #7a5c6c;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 16px rgba(120, 60, 90, 0.12);
+}
+
+/* ── форма ───────────────────────────────────────── */
+.form {
+  text-align: left;
+}
+
+.form .title,
+.form .subtitle,
+.done .title,
+.done .subtitle {
+  text-align: center;
+}
+
+.field {
+  display: block;
+  margin-bottom: 22px;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.input {
+  width: 100%;
+  padding: 13px 16px;
+  font: inherit;
+  font-size: 16px; /* < 16px змушує iOS зумити сторінку */
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(255, 93, 143, 0.25);
+  border-radius: 16px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.input:focus {
+  border-color: var(--pink);
+  box-shadow: 0 0 0 4px rgba(255, 143, 171, 0.25);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 84px;
+}
+
+.select-time {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23ff5d8f'%3E%3Cpath d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%23ff5d8f' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+  padding-right: 42px;
+}
+
+.select-time option:disabled {
+  color: #b7a6b0;
+}
+
+.hint {
+  display: block;
+  margin-top: 7px;
+  font-size: 12.5px;
+  opacity: 0.6;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.chip {
+  padding: 10px 15px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(255, 93, 143, 0.22);
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip:active {
+  transform: scale(0.95);
+}
+
+.chip.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--pink), var(--violet));
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(255, 93, 143, 0.32);
+}
+
+.chip-emoji {
+  margin-right: 6px;
+}
+
+/* ── чіпи вибору дня ─────────────────────────────── */
+.chips.days {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  scrollbar-width: thin;
+}
+
+.chip.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 52px;
+  padding: 8px 10px;
+  flex: 0 0 auto;
+}
+
+.day-weekday {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+}
+
+.day-date {
+  font-variant-numeric: tabular-nums;
+}
+
+/* закреслений чіп: цілий зайнятий день або конкретна зайнята година */
+.chip.busy {
+  cursor: not-allowed;
+  color: #9c8896;
+  background: rgba(122, 92, 108, 0.08);
+  border-color: rgba(122, 92, 108, 0.14);
+  box-shadow: none;
+}
+
+.chip.day.busy .day-date {
+  text-decoration: line-through;
+  text-decoration-color: rgba(122, 92, 108, 0.5);
+}
+
+.chip.busy:not(.day) {
+  text-decoration: line-through;
+  text-decoration-color: rgba(122, 92, 108, 0.5);
+}
+
+.chip.busy:active {
+  transform: none;
+}
+
+.error {
+  margin: -6px 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #d63864;
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+/* ── фінальна картка ─────────────────────────────── */
+.ticket-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  margin-bottom: 10px;
+  border-bottom: 2px dashed rgba(255, 93, 143, 0.35);
+}
+
+.ticket-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+
+.ticket-heart {
+  font-size: 20px;
+}
+
+.countdown {
+  margin: 4px 0 0;
+  font-size: 14.5px;
+  text-align: center;
+  opacity: 0.75;
+}
+
+.countdown strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--pink);
+}
+
+.places {
+  margin: 4px 0 20px;
+  text-align: left;
+}
+
+.places-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.places-list a {
+  display: inline-block;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  padding: 9px 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(255, 93, 143, 0.22);
+  border-radius: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.places-list a:hover,
+.places-list a:focus-visible {
+  border-color: var(--pink);
+}
+
+.summary {
+  margin: 18px 0 22px;
+  text-align: left;
+}
+
+.summary-row {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255, 93, 143, 0.16);
+}
+
+.summary-key {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+  white-space: nowrap;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.done-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ics-link {
+  display: block;
+  margin: 14px auto 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fallback-copy {
+  margin: 0 0 18px;
+  text-align: left;
+  animation: pop-in 0.3s ease both;
+}
+
+.fallback-copy .hint {
+  margin-bottom: 8px;
+}
+
+.fallback-copy .textarea {
+  min-height: auto;
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 26px 18px;
+  }
+  .btn {
+    padding: 14px 24px;
+    font-size: 16px;
+  }
+  .done-actions .btn {
+    flex: 1 1 100%;
+  }
+}
+
+/* ── причини "чому саме кава зі мною" ────────────── */
+.reasons-block {
+  margin: -6px 0 18px;
+}
+
+.reasons-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--violet);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.reasons-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.reason-card {
+  padding: 12px 16px;
+  font-size: 14.5px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1.5px solid rgba(255, 93, 143, 0.18);
+  border-radius: 14px;
+  transform-origin: top center;
+  animation: card-flip-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+@keyframes card-flip-in {
+  from {
+    opacity: 0;
+    transform: rotateX(-70deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0deg);
+  }
+}
+
+/* ── кнопка музики ───────────────────────────────── */
+.music-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 50;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 18px rgba(120, 60, 90, 0.18);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .date-app,
+  .emoji-big,
+  .heart,
+  .card,
+  .error,
+  .reason-card {
+    animation: none !important;
+  }
+}

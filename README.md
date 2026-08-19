@@ -1,46 +1,126 @@
-# Getting Started with Create React App
+# Запрошення на побачення 💌
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Маленький вайбовий сайт-запрошення: питання «Підеш зі мною на каву?», кнопка
+«так» — і кнопка «ні», яку неможливо натиснути. Після «так» відкривається
+форма: коли вільна, о котрій та яке побачення хочеться. У фіналі — «квиток на
+побачення», який можна надіслати одним тапом.
 
-## Available Scripts
+## Як це працює
 
-In the project directory, you can run:
+**Кнопка «ні» (`src/date/RunawayNo.tsx`)**
 
-### `npm start`
+- **Комп'ютер** — слухається рух миші по всьому вікну: щойно курсор підповзає
+  ближче ніж на 110 px, кнопка телепортується в інше місце екрана.
+- **Телефон** — там ховера немає, тому працюють три запобіжники:
+  1. кнопка стрибає ще на `pointerdown`/`touchstart`, тобто до того, як палець
+     відпустили;
+  2. навіть якщо тап якось зареєструвався, `onClick` не приймає відповідь —
+     він просто змушує кнопку тікати далі;
+  3. з кожною спробою кнопка меншає (до 45 % розміру), а «так» — росте.
+- Після 9 ухилянь кнопка «ні» зникає назавжди, лишається тільки «так».
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+**Форма (`src/date/PlanForm.tsx`)** — день (не раніше сьогодні), час (швидкі
+варіанти чи випадний список), одна чи кілька ідей для побачення, поле для
+побажань. Зайнятість рахується з двох джерел, що об'єднуються в один
+список проміжків на день (`dateUtils.effectiveBusyRanges`):
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- `config.recurringBusy` — регулярна щотижнева зайнятість: робота
+  (пн–пт, 10:00–18:00 з буфером в годину до і після — фактично зайнято
+  09:00–19:00) і тренування, кожне свого дня тижня (наприклад MMA в
+  середу о 19:00). Кожен блок застосовується щотижня автоматично, без
+  прив'язки до конкретної дати; блоки, що перетинаються чи впритул
+  межують (наприклад робота до 19:00 і тренування з 19:00), зливаються в
+  один діапазон;
+- `config.busyDays` — окремі зайняті дні понад графік: `{ allDay: true }`
+  робить день недоступним повністю; `{ ranges: [...] }` додає ще проміжки
+  саме в цей день (наприклад вечірні плани), які об'єднуються з робочим
+  графіком, якщо день і так робочий.
 
-### `npm test`
+День з `allDay` закреслений і неактивний серед швидких кнопок; якщо таку
+дату все ж ввести вручну, форма підказує це й не дає надіслати. Для дня з
+проміжками — і чіпи `timeSlots`, і опції у випадному списку годин
+(`<select>`, крок 30 хв від 08:00 до 23:30) закреслюються/дизейбляться
+саме на тих годинах, які перетинаються з зайнятим часом (з урахуванням
+`dateDurationMinutes` — скільки триває побачення); ручний вибір
+конфліктного часу теж ловиться і блокує сабміт.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**Фінал (`src/date/Done.tsx`)** — картка-квиток із підсумком, живим
+зворотним відліком до побачення (`Countdown.tsx`) і трьома рівнями
+запасних варіантів там, де браузер/пісочниця може щось заблокувати:
 
-### `npm run build`
+- «Надіслати / скопіювати» — Web Share API → якщо недоступний або
+  відхилений, буфер обміну → якщо і той заблокований (типово для
+  пісочниць на кшталт прев'ю-редакторів), текст просто з'являється в
+  полі внизу вже виділеним — лишається натиснути Ctrl/Cmd+C, це працює
+  завжди, бо не залежить від жодного дозволу браузера;
+- «Google Calendar 📅» — посилання (`ics.buildGoogleCalendarUrl`), що
+  відкриває шаблон події в новій вкладці; не завантажує жодного файлу,
+  тому працює й там, де завантаження заблоковані;
+- «завантажити .ics-файл» — окреме дрібне посилання під кнопками, формує
+  `.ics` на льоту (`ics.downloadICS`) для Apple Calendar тощо; на
+  реальному сайті працює як завжди, але в пісочницях із забороненими
+  завантаженнями (наприклад прев'ю-редактор) — ні, тому воно другорядне,
+  а не основна дія.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Якщо для обраних ідей побачення в `config.placeIdeas` є місця — під
+підсумком з'являється блок «куди підемо» з посиланнями на карту.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Причини «чому саме кава зі мною»** (`src/date/Reasons.tsx`) —
+розкривний список карток під головним питанням; текст у
+`config.reasons`, порожній масив прибирає блок і кнопку-перемикач
+повністю.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Фонова музика** (`src/date/MusicToggle.tsx`) — плаваюча кнопка
+🔈/🔊 у кутку екрана. З'являється, лише якщо в `config.musicUrl` щось
+вказано (плей вмикається кнопкою, а не автоплеєм, — браузери
+автоплей все одно блокують).
 
-### `npm run eject`
+## Що можна змінити під себе
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Все найважливіше зібрано в `src/date/config.ts`:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `herName` / `myName` — імена (можна лишити порожніми);
+- `intro` — короткий вступ над питанням (можна лишити порожнім рядком);
+- `question` і `subtitle` — текст головного питання;
+- `noLabels` — фрази на кнопці «ні», поки вона тікає (їх кількість задає, скільки
+  разів вона встигне втекти);
+- `dateIdeas` — варіанти побачення;
+- `timeSlots` — швидкі варіанти часу;
+- `dateDurationMinutes` — скільки в середньому триває побачення; впливає на
+  те, які саме години вважаються зайнятими навколо робочого графіка й
+  `busyDays`-проміжків;
+- `recurringBusy` — масив щотижневих блоків зайнятості (робота,
+  тренування...), кожен: `label` (тільки для читабельності конфіга),
+  `weekdays` (дні тижня, як у `Date.getDay()`: 0 — нд, 1 — пн, ... 6 — сб),
+  `start`/`end` (`"HH:MM"`), необов'язковий `bufferMinutes` (запас часу до
+  і після — за замовчуванням 0). Додай сюди свій графік — секцію
+  тренувань я звірив по скріну твого календаря, час стретчингу і
+  «upper body» в понеділок ти підтвердив окремо;
+- `busyDays` — моя зайнятість поза графіком, звірена з календарем вручну
+  на момент правки (формат ключа `"YYYY-MM-DD"`). `{ allDay: true }` —
+  весь день недоступний; `{ ranges: [{ start, end }] }` — додаткові
+  зайняті проміжки саме в цей день. Сайт без бекенду, тому живого
+  підключення до календаря немає — онови об'єкти й перезбери сайт
+  (`npm run build`), коли плани зміняться;
+- `reasons` — картки «чому саме кава зі мною» на першому екрані; порожній
+  масив прибирає й картки, і кнопку-перемикач;
+- `musicUrl` — посилання на фоновий трек (свій mp3 у `public/`, наприклад
+  `"/song.mp3"`, або пряме посилання на аудіофайл). Порожній рядок —
+  кнопки музики взагалі немає;
+- `placeIdeas` — приклади місць під кожну ідею побачення (ключ — `id` з
+  `dateIdeas`). Порожній масив за замовчуванням для кожної ідеї — устав
+  свої реальні заклади (назва + посилання на Google Maps), інакше блок
+  «куди підемо» на фінальному екрані не з'явиться.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+Стилі — у `src/date/date.css` (кольори винесені у CSS-змінні на початку файлу).
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## Команди
 
-## Learn More
+```bash
+npm install     # встановити залежності
+npm start       # локальний запуск на http://localhost:3000
+npm run build   # прод-збірка у папку build/
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Готову збірку з `build/` можна залити на будь-який статичний хостинг
+(Vercel, Netlify, GitHub Pages) — бекенд не потрібен.
