@@ -232,6 +232,14 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* .btn на <a> (наприклад посилання на Google Calendar) */
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
 .btn-yes {
   color: #fff;
   background: linear-gradient(135deg, var(--pink), var(--violet));
@@ -546,6 +554,35 @@
   flex-wrap: wrap;
   gap: 10px;
   justify-content: center;
+}
+
+.ics-link {
+  display: block;
+  margin: 14px auto 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  opacity: 0.6;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fallback-copy {
+  margin: 0 0 18px;
+  text-align: left;
+  animation: pop-in 0.3s ease both;
+}
+
+.fallback-copy .hint {
+  margin-bottom: 8px;
+}
+
+.fallback-copy .textarea {
+  min-height: auto;
 }
 
 @media (max-width: 480px) {
