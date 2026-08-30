@@ -8,7 +8,6 @@ import Reasons from "./Reasons";
 import RunawayNo from "./RunawayNo";
 import ScratchCard from "./ScratchCard";
 import { config, maxDodges } from "./config";
-import { daysBetween, parseISO, pluralize, today } from "./dateUtils";
 import { DatePlan } from "./types";
 import "./date.css";
 
@@ -37,20 +36,6 @@ const DateInvite: React.FC = () => {
   const yesScale = Math.min(1 + dodges * 0.06, 1.45);
   const tease = teases[Math.min(dodges, teases.length - 1)];
 
-  const daysKnown = config.metDate
-    ? daysBetween(parseISO(config.metDate), today())
-    : null;
-  const knownSinceText =
-    daysKnown !== null && daysKnown >= 0
-      ? daysKnown === 0
-        ? "ми знайомі відсьогодні 🙂"
-        : `ми знайомі вже ${daysKnown} ${pluralize(daysKnown, [
-            "день",
-            "дні",
-            "днів",
-          ])} 🙂`
-      : null;
-
   return (
     <div className="date-app">
       <Hearts />
@@ -62,9 +47,6 @@ const DateInvite: React.FC = () => {
           <ScratchCard active={!revealed} onReveal={() => setRevealed(true)}>
             <div className="card ask">
               {config.intro && <p className="intro">{config.intro}</p>}
-              {knownSinceText && (
-                <p className="known-since">{knownSinceText}</p>
-              )}
               <div className="emoji-big">☕💗</div>
               <h1 className="title">
                 {config.herName ? `${config.herName}, ` : ""}

@@ -135,17 +135,6 @@
   opacity: 0.82;
 }
 
-.known-since {
-  display: inline-block;
-  margin: 0 0 18px;
-  padding: 6px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #7a5c6c;
-  background: rgba(255, 93, 143, 0.12);
-  border-radius: 999px;
-}
-
 .emoji-big {
   font-size: 56px;
   line-height: 1;
