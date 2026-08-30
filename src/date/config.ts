@@ -45,6 +45,7 @@ export const dateIdeas = [
   { id: "dinner", emoji: "🍝", label: "Вечеря" },
   { id: "icecream", emoji: "🍦", label: "Морозиво" },
   { id: "games", emoji: "🎳", label: "Ігри / боулінг" },
+  { id: "racing", emoji: "🏎️", label: "Картинг / сім-рейсинг" },
   { id: "art", emoji: "🎨", label: "Щось креативне" },
   { id: "surprise", emoji: "🎁", label: "Сюрприз від тебе" },
 ];
@@ -120,6 +121,7 @@ export const placeIdeas: Record<string, { name: string; mapUrl: string }[]> = {
   dinner: [],
   icecream: [],
   games: [],
+  racing: [],
   art: [],
   surprise: [],
 };
