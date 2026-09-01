@@ -4,6 +4,7 @@ import Done from "./Done";
 import Hearts from "./Hearts";
 import MusicToggle from "./MusicToggle";
 import PlanForm from "./PlanForm";
+import RacingBackground from "./RacingBackground";
 import Reasons from "./Reasons";
 import RunawayNo from "./RunawayNo";
 import ScratchCard from "./ScratchCard";
@@ -65,6 +66,7 @@ const DateInvite: React.FC = () => {
 
   return (
     <div className="date-app">
+      <RacingBackground />
       <Hearts emojis={BACKGROUND_EMOJIS} />
       <Confetti fire={step !== "ask"} />
       <MusicToggle />

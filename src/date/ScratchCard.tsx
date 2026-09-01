@@ -62,15 +62,17 @@ const ScratchCard: React.FC<Props> = ({ active, onReveal, children }) => {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.globalCompositeOperation = "source-over";
 
+    // темний "шліфований метал" замість пастельного срібла — пасує
+    // неоновій гоночній темі
     const grad = ctx.createLinearGradient(0, 0, size.w, size.h);
-    grad.addColorStop(0, "#e7dcf0");
-    grad.addColorStop(0.5, "#f4e3ef");
-    grad.addColorStop(1, "#dcd0ea");
+    grad.addColorStop(0, "#241a38");
+    grad.addColorStop(0.5, "#352548");
+    grad.addColorStop(1, "#1c1430");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size.w, size.h);
 
-    // діагональні смужки — ефект фольги
-    ctx.strokeStyle = "rgba(255,255,255,0.4)";
+    // діагональні смужки — ефект фольги/карбону
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
     ctx.lineWidth = 10;
     for (let x = -size.h; x < size.w; x += 26) {
       ctx.beginPath();
@@ -80,10 +82,11 @@ const ScratchCard: React.FC<Props> = ({ active, onReveal, children }) => {
     }
 
     ctx.textAlign = "center";
-    ctx.fillStyle = "rgba(122,92,108,0.75)";
+    ctx.fillStyle = "rgba(242,236,251,0.85)";
     ctx.font = "34px sans-serif";
     ctx.fillText("🎟️", size.w / 2, size.h / 2 - 8);
     ctx.font = "700 16px Nunito, sans-serif";
+    ctx.fillStyle = "rgba(242,236,251,0.8)";
     ctx.fillText("проведи пальцем, щоб дізнатись", size.w / 2, size.h / 2 + 26);
   }, [active, size]);
 
