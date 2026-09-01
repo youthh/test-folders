@@ -1,6 +1,6 @@
 {
-  "short_name": "Побачення 💌",
-  "name": "Підеш зі мною на каву?",
+  "short_name": "Гонки 🏎️",
+  "name": "Погнали на сім-рейсинг?",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#ff8fab",
-  "background_color": "#fff4f7"
+  "theme_color": "#170a26",
+  "background_color": "#0a0612"
 }

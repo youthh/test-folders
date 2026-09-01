@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { reasons } from "./config";
 
-/** Розкривний список причин «чому саме кава зі мною». */
+/** Розкривний список причин «чому саме зі мною». */
 const Reasons: React.FC = () => {
   const [open, setOpen] = useState(false);
 
@@ -15,7 +15,7 @@ const Reasons: React.FC = () => {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
       >
-        {open ? "сховати ↑" : "чому саме кава зі мною? 👉"}
+        {open ? "сховати ↑" : "чому саме зі мною? 👉"}
       </button>
 
       {open && (

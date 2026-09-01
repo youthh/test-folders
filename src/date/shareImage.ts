@@ -16,7 +16,7 @@ export const renderNodeToBlob = async (
   await document.fonts?.ready?.catch(() => {});
 
   const canvas = await html2canvas(node, {
-    backgroundColor: "#fff4f7",
+    backgroundColor: "#170a26",
     scale: Math.min(window.devicePixelRatio || 2, 3),
     useCORS: true,
     ...options,

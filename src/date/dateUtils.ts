@@ -66,12 +66,6 @@ export const today = () => {
   return now;
 };
 
-/** Ціле число днів між двома датами (a раніше b). */
-export const daysBetween = (a: Date, b: Date) => {
-  const MS_DAY = 24 * 60 * 60 * 1000;
-  return Math.round((b.getTime() - a.getTime()) / MS_DAY);
-};
-
 /** "YYYY-MM-DD" + "HH:MM" → Date у локальному часовому поясі. */
 export const toDateTime = (iso: string, hhmm: string) => {
   const date = parseISO(iso);
@@ -90,6 +84,25 @@ export const pluralize = (
   if (mod10 === 1 && mod100 !== 11) return one;
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
   return many;
+};
+
+/** "3 дні 4 години" / "12 хвилин" — з мілісекунд, українська множина. */
+export const formatDuration = (ms: number) => {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  const parts: string[] = [];
+  if (days > 0)
+    parts.push(`${days} ${pluralize(days, ["день", "дні", "днів"])}`);
+  if (days > 0 || hours > 0)
+    parts.push(`${hours} ${pluralize(hours, ["година", "години", "годин"])}`);
+  if (days === 0)
+    parts.push(
+      `${minutes} ${pluralize(minutes, ["хвилина", "хвилини", "хвилин"])}`,
+    );
+  return parts.join(" ");
 };
 
 export const timeToMinutes = (hhmm: string) => {
