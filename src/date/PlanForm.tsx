@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import {
   busyDays,
   dateDurationMinutes,
-  dateIdeas,
   timeSlots,
   recurringBusy,
 } from "./config";
@@ -33,7 +32,7 @@ const BUSY_TITLE = "у цей день я вже зайнятий";
 const timeBusyMessage = (day: string) =>
   `Ой, у цей час у мене вже є плани на ${day} 😅 обери інший`;
 
-/** Форма: коли вільна, о котрій та яке побачення хочеться. */
+/** Форма: коли вільна і о котрій — саме побачення вже визначене заздалегідь. */
 const PlanForm: React.FC<Props> = ({ onSubmit }) => {
   const min = useMemo(() => toISO(today()), []);
   const quickDays = useMemo(
@@ -51,7 +50,6 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
 
   const [day, setDay] = useState("");
   const [time, setTime] = useState("");
-  const [ideas, setIdeas] = useState<string[]>([]);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
 
@@ -88,13 +86,6 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
     setError("");
   };
 
-  const toggleIdea = (id: string) => {
-    setIdeas((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-    setError("");
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!day) return setError("Обери день 🗓️");
@@ -103,17 +94,13 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
     if (!time) return setError("І час теж 🕒");
     if (isTimeBusy(time))
       return setError(timeBusyMessage(shortDay(parseISO(day))));
-    if (ideas.length === 0)
-      return setError("Обери хоч одну ідею для побачення 💫");
-    onSubmit({ day, time, ideas, note: note.trim() });
+    onSubmit({ day, time, note: note.trim() });
   };
 
   return (
     <form className="card form" onSubmit={handleSubmit}>
       <h2 className="title small">Ура! 🎉</h2>
-      <p className="subtitle">
-        Тепер найважливіше: коли ти вільна і що робимо?
-      </p>
+      <p className="subtitle">Тепер найважливіше: коли ти вільна?</p>
 
       <div className="field">
         <span className="field-label">Який день тобі зручний?</span>
@@ -218,32 +205,13 @@ const PlanForm: React.FC<Props> = ({ onSubmit }) => {
         )}
       </div>
 
-      <div className="field">
-        <span className="field-label">Яке побачення хочеш?</span>
-        <div className="chips">
-          {dateIdeas.map((idea) => (
-            <button
-              key={idea.id}
-              type="button"
-              className={`chip idea${ideas.includes(idea.id) ? " active" : ""}`}
-              onClick={() => toggleIdea(idea.id)}
-              aria-pressed={ideas.includes(idea.id)}
-            >
-              <span className="chip-emoji">{idea.emoji}</span>
-              {idea.label}
-            </button>
-          ))}
-        </div>
-        <span className="hint">можна обрати кілька 😌</span>
-      </div>
-
       <label className="field">
         <span className="field-label">Побажання / умови (необов'язково)</span>
         <textarea
           className="input textarea"
           rows={3}
           maxLength={400}
-          placeholder="напр.: тільки без дощу, і щоб десерт був"
+          placeholder="напр.: тільки без дощу"
           value={note}
           onChange={(e) => setNote(e.target.value)}
         />

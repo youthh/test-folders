@@ -1,4 +1,4 @@
-import { config, dateDurationMinutes, dateIdeas } from "./config";
+import { activity, config, dateDurationMinutes } from "./config";
 import { toDateTime } from "./dateUtils";
 import { DatePlan } from "./types";
 
@@ -14,15 +14,12 @@ const toStamp = (date: Date) =>
     date.getHours(),
   )}${pad(date.getMinutes())}00`;
 
-const ideaLabel = (id: string) =>
-  dateIdeas.find((idea) => idea.id === id)?.label ?? id;
-
 const summaryOf = () =>
   `Побачення${config.herName ? ` з ${config.herName}` : ""} 💌`;
 
 const descriptionOf = (plan: DatePlan) =>
   [
-    `Що робимо: ${plan.ideas.map(ideaLabel).join(", ")}`,
+    `Що робимо: ${activity.emoji} ${activity.label}`,
     plan.note ? `Побажання: ${plan.note}` : "",
     config.myName ? `Від: ${config.myName}` : "",
   ]

@@ -612,10 +612,30 @@ a.btn {
 /* ── скретч-картка ───────────────────────────────── */
 /* .stage — flex-контейнер, тож обгортці потрібна власна ширина: інакше
    вона (як flex-елемент) стискається до вмісту, і .card { width:100% }
-   всередині втрачає базу для відсотка й обвалюється в нуль */
-.scratch-outer {
+   всередині втрачає базу для відсотка й обвалюється в нуль. Той самий
+   фікс потрібен і .ask-page — обгортці бейджа таймера дії пропозиції
+   довкола скретч-картки. */
+.scratch-outer,
+.ask-page {
   width: 100%;
   max-width: 520px;
+}
+
+.offer-timer {
+  display: block;
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #7a5c6c;
+}
+
+.card.expired .title {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  -webkit-text-fill-color: currentColor;
+  color: #7a5c6c;
 }
 
 .scratch-wrap {
