@@ -1,12 +1,9 @@
 import React, { useMemo } from "react";
 
-const DEFAULT_EMOJIS = ["💗", "💖", "✨", "💘", "🌸", "💞", "🫶"];
+const EMOJIS = ["💗", "💖", "✨", "💘", "🌸", "💞", "☕", "🫶"];
 
-/** Фонові емодзі, які повільно летять вгору. */
-const Hearts: React.FC<{ count?: number; emojis?: string[] }> = ({
-  count = 18,
-  emojis = DEFAULT_EMOJIS,
-}) => {
+/** Фонові сердечка, які повільно летять вгору. */
+const Hearts: React.FC<{ count?: number }> = ({ count = 18 }) => {
   const items = useMemo(
     () =>
       Array.from({ length: count }, (_, i) => ({
@@ -15,9 +12,9 @@ const Hearts: React.FC<{ count?: number; emojis?: string[] }> = ({
         delay: Math.random() * 12,
         duration: 12 + Math.random() * 12,
         size: 14 + Math.random() * 26,
-        emoji: emojis[Math.floor(Math.random() * emojis.length)],
+        emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
       })),
-    [count, emojis],
+    [count],
   );
 
   return (

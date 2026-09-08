@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { formatDuration, toDateTime } from "./dateUtils";
+import { pluralize, toDateTime } from "./dateUtils";
 
 interface Props {
   day: string;
@@ -20,9 +20,24 @@ const Countdown: React.FC<Props> = ({ day, time }) => {
     return <p className="countdown">цей момент уже настав 🥳</p>;
   }
 
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  const parts: string[] = [];
+  if (days > 0)
+    parts.push(`${days} ${pluralize(days, ["день", "дні", "днів"])}`);
+  if (days > 0 || hours > 0)
+    parts.push(`${hours} ${pluralize(hours, ["година", "години", "годин"])}`);
+  if (days === 0)
+    parts.push(
+      `${minutes} ${pluralize(minutes, ["хвилина", "хвилини", "хвилин"])}`,
+    );
+
   return (
     <p className="countdown">
-      залишилось <strong>{formatDuration(diffMs)}</strong> ⏳
+      залишилось <strong>{parts.join(" ")}</strong> ⏳
     </p>
   );
 };
