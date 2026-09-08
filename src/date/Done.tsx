@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import Countdown from "./Countdown";
-import { activity, config, places } from "./config";
+import { config, dateIdeas, placeIdeas } from "./config";
 import { prettyDay } from "./dateUtils";
 import { buildGoogleCalendarUrl, downloadICS } from "./ics";
 import { renderNodeToBlob, shareOrSaveImage } from "./shareImage";
@@ -11,6 +11,17 @@ interface Props {
   onEdit: () => void;
 }
 
+const ideaLabels = (ids: string[]) =>
+  ids
+    .map((id) => {
+      const idea = dateIdeas.find((x) => x.id === id);
+      return idea ? `${idea.emoji} ${idea.label}` : null;
+    })
+    .filter(Boolean) as string[];
+
+/** Місця під обрані ідеї побачення, зібрані з config.placeIdeas. */
+const places = (ids: string[]) => ids.flatMap((id) => placeIdeas[id] ?? []);
+
 /** Фінальна картка з підсумком побачення. */
 const Done: React.FC<Props> = ({ plan, onEdit }) => {
   const [copied, setCopied] = useState(false);
@@ -19,11 +30,13 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
   const [imageError, setImageError] = useState(false);
   const fallbackRef = useRef<HTMLTextAreaElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const labels = ideaLabels(plan.ideas);
+  const suggestedPlaces = places(plan.ideas);
 
   const text = [
     "Побачення підтверджено 💌",
     `Коли: ${prettyDay(plan.day)} о ${plan.time}`,
-    `Що робимо: ${activity.emoji} ${activity.label}`,
+    `Що робимо: ${labels.join(", ")}`,
     plan.note ? `Побажання: ${plan.note}` : "",
     config.myName ? `Чекаю 🤍 ${config.myName}` : "",
   ]
@@ -95,7 +108,7 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
     <div className="card done" ref={cardRef}>
       <div className="ticket-top">
         <span className="ticket-label">квиток на побачення</span>
-        <span className="ticket-heart">{activity.emoji}</span>
+        <span className="ticket-heart">💌</span>
       </div>
 
       <h2 className="title small">
@@ -115,9 +128,7 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
         </div>
         <div className="summary-row">
           <span className="summary-key">Що робимо</span>
-          <span className="summary-value">
-            {activity.emoji} {activity.label}
-          </span>
+          <span className="summary-value">{labels.join(" · ")}</span>
         </div>
         {plan.note && (
           <div className="summary-row">
@@ -127,11 +138,11 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
         )}
       </div>
 
-      {places.length > 0 && (
+      {suggestedPlaces.length > 0 && (
         <div className="places">
-          <span className="field-label">Де</span>
+          <span className="field-label">Куди підемо</span>
           <ul className="places-list">
-            {places.map((place) => (
+            {suggestedPlaces.map((place) => (
               <li key={place.name}>
                 <a href={place.mapUrl} target="_blank" rel="noreferrer">
                   📍 {place.name}
