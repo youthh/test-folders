@@ -9,7 +9,7 @@ export const config = {
   myName: "",
   // Маленький рукописний підпис над карткою — англійською, гарним
   // курсивним шрифтом (Great Vibes). Порожній рядок — підпису не буде.
-  dedication: "made especially for Lera, with love from Oleksiy",
+  dedication: "made especially for Lera, from Oleksiy",
   // Показується, якщо вона заходить на сайт не вперше (визначається по
   // localStorage у цьому браузері) — просто тепла нотка, що ти радий її
   // бачити знову, навіть якщо вона просто зазирнула глянути. Порожній
