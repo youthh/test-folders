@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Confetti from "./Confetti";
 import Done from "./Done";
 import Hearts from "./Hearts";
@@ -24,14 +24,33 @@ const teases = [
   "остання спроба, і вона втече",
 ];
 
+// Ключ у localStorage: якщо вже стояв до цього відкриття — значить,
+// вона заходить не вперше.
+const VISITED_KEY = "date-invite-visited";
+
 const DateInvite: React.FC = () => {
   const [step, setStep] = useState<Step>("ask");
   const [dodges, setDodges] = useState(0);
   const [plan, setPlan] = useState<DatePlan | null>(null);
   // поки false — питання сховане під шаром "фольги" скретч-картки
   const [revealed, setRevealed] = useState(false);
+  // true, якщо цей браузер вже відкривав сайт раніше
+  const [isReturning, setIsReturning] = useState(false);
   // майданчик, за межі якого кнопка «ні» не може втекти
   const arenaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(VISITED_KEY)) {
+        setIsReturning(true);
+      } else {
+        localStorage.setItem(VISITED_KEY, "1");
+      }
+    } catch {
+      // localStorage може бути заблокований (приватний режим тощо) —
+      // просто не показуємо повідомлення, нічого критичного
+    }
+  }, []);
 
   const yesScale = Math.min(1 + dodges * 0.06, 1.45);
   const tease = teases[Math.min(dodges, teases.length - 1)];
@@ -48,6 +67,9 @@ const DateInvite: React.FC = () => {
             <div className="card ask">
               {config.dedication && (
                 <p className="dedication">{config.dedication}</p>
+              )}
+              {isReturning && config.welcomeBackNote && (
+                <p className="welcome-back">{config.welcomeBackNote}</p>
               )}
               {config.intro && <p className="intro">{config.intro}</p>}
               <div className="emoji-big">☕💗</div>
