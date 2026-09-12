@@ -46,6 +46,9 @@ const DateInvite: React.FC = () => {
         {step === "ask" && (
           <ScratchCard active={!revealed} onReveal={() => setRevealed(true)}>
             <div className="card ask">
+              {config.dedication && (
+                <p className="dedication">{config.dedication}</p>
+              )}
               {config.intro && <p className="intro">{config.intro}</p>}
               <div className="emoji-big">☕💗</div>
               <h1 className="title">
