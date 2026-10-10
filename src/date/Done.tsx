@@ -4,6 +4,7 @@ import { config, dateIdeas, placeIdeas } from "./config";
 import { prettyDay } from "./dateUtils";
 import { buildGoogleCalendarUrl, downloadICS } from "./ics";
 import { renderNodeToBlob, shareOrSaveImage } from "./shareImage";
+import TicketQR from "./TicketQR";
 import { DatePlan } from "./types";
 
 interface Props {
@@ -152,6 +153,10 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
           </ul>
         </div>
       )}
+
+      <div className="ticket-stub">
+        <TicketQR value={buildGoogleCalendarUrl(plan)} />
+      </div>
 
       <p className="subtitle no-capture">
         Надішли це мені — і вважай, що ми домовились 🤍
