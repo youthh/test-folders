@@ -1,4 +1,9 @@
-import { config, dateDurationMinutes, dateIdeas } from "./config";
+import {
+  config,
+  dateDurationMinutes,
+  dateIdeas,
+  reminderMinutes,
+} from "./config";
 import { toDateTime } from "./dateUtils";
 import { triggerDownload } from "./download";
 import { DatePlan } from "./types";
@@ -121,6 +126,15 @@ export const buildICS = (plan: DatePlan) => {
     `DTEND;TZID=${TIME_ZONE}:${toStamp(end)}`,
     `SUMMARY:${escapeICS(summaryOf())}`,
     `DESCRIPTION:${escapeICS(descriptionOf(plan))}`,
+    ...(reminderMinutes > 0
+      ? [
+          "BEGIN:VALARM",
+          `TRIGGER:-PT${Math.round(reminderMinutes)}M`,
+          "ACTION:DISPLAY",
+          `DESCRIPTION:${escapeICS(summaryOf())}`,
+          "END:VALARM",
+        ]
+      : []),
     "END:VEVENT",
     "END:VCALENDAR",
   ];
