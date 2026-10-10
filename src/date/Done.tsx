@@ -4,6 +4,7 @@ import { config, dateIdeas, placeIdeas } from "./config";
 import { prettyDay } from "./dateUtils";
 import { buildGoogleCalendarUrl, downloadICS } from "./ics";
 import { renderNodeToBlob, shareOrSaveImage } from "./shareImage";
+import { buildTelegramShareUrl, buildWhatsAppShareUrl } from "./shareLinks";
 import { DatePlan } from "./types";
 
 interface Props {
@@ -193,6 +194,22 @@ const Done: React.FC<Props> = ({ plan, onEdit }) => {
           className="btn btn-ghost"
         >
           Google Calendar 📅
+        </a>
+        <a
+          href={buildTelegramShareUrl(text, window.location.href)}
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-ghost"
+        >
+          Telegram ✈️
+        </a>
+        <a
+          href={buildWhatsAppShareUrl(text)}
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-ghost"
+        >
+          WhatsApp 💬
         </a>
         <button type="button" className="btn btn-ghost" onClick={onEdit}>
           Змінити
