@@ -1,5 +1,6 @@
 import { config, dateDurationMinutes, dateIdeas } from "./config";
 import { toDateTime } from "./dateUtils";
+import { triggerDownload } from "./download";
 import { DatePlan } from "./types";
 
 // Усі часи побачення — за київським часом (сайт зроблений під конкретну
@@ -138,16 +139,9 @@ export const downloadICS = (plan: DatePlan) => {
   const blob = new Blob([buildICS(plan)], {
     type: "text/calendar;charset=utf-8",
   });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
   // ASCII-ім'я — кирилиця в download-атрибуті ненадійна на деяких
   // пристроях (зокрема iOS Safari)
-  a.download = "date-invite.ics";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  triggerDownload(blob, "date-invite.ics");
 };
 
 /**
