@@ -1,4 +1,5 @@
 import html2canvas from "html2canvas";
+import { triggerDownload } from "./download";
 
 type Html2CanvasOptions = NonNullable<Parameters<typeof html2canvas>[1]>;
 
@@ -87,13 +88,6 @@ export const shareOrSaveImage = async (
     // недоступно чи відхилено — пробуємо звичайне завантаження нижче
   }
 
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  triggerDownload(blob, filename);
   return "downloaded";
 };
