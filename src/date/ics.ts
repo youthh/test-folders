@@ -49,20 +49,27 @@ const newUID = () => {
   return `${id}@date-invite`;
 };
 
-const encoder = new TextEncoder();
+/** Довжина символа в UTF-8 без TextEncoder, якого немає в Jest/jsdom. */
+const utf8Length = (ch: string) => {
+  const cp = ch.codePointAt(0) ?? 0;
+  if (cp < 0x80) return 1;
+  if (cp < 0x800) return 2;
+  if (cp < 0x10000) return 3;
+  return 4;
+};
 
 /**
  * RFC 5545: рядок не довший за 75 октетів (UTF-8 байтів, а не символів);
  * продовження починається з пробілу, який теж входить у ліміт.
  */
 const foldLine = (line: string) => {
-  if (encoder.encode(line).length <= 75) return line;
+  if (Array.from(line).reduce((n, ch) => n + utf8Length(ch), 0) <= 75) return line;
   const parts: string[] = [];
   let current = "";
   let size = 0;
   let limit = 75;
   Array.from(line).forEach((ch) => {
-    const bytes = encoder.encode(ch).length;
+    const bytes = utf8Length(ch);
     if (size + bytes > limit) {
       parts.push(current);
       current = "";
